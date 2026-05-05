@@ -31,21 +31,21 @@ Inside each folder the structure is as follows
 
 ## Differentiation triggering field
 The field that trigger the differentiation can be modeled in several ways. For all cases the field is active for a time `t_decay`. After this time this field, and `rq` are set to zero.
-### Individual beads
+### Individual beads (bd_dist)
 For these simulations, the differentiation field is given by individual beads which are modeled as a small Gaussian. Each bead contribution is summed. The number of beads `N_bd`, their magnitude `m_bd` and width `sig_bd` can be set in the config JSON file. The spatial distribution `dist` of the beads can be `homo`, so they are homogenously distributed across the domain or `pol`, so they are concentrated in the bottom left quarter of the domain. There is also `one`, which generates one bead at the center of the domain. 
 
-### Gauss field
+### Gauss field (gauss_dist)
 For these simulations, the differentiation field is given by a bigger continous field. There are two `types` of field, it can be Gaussian `pol` with a magnitude `rbm` and width `sigma` centered at `x0`,`y0`. Or it can be homogeneous `homo` with a value `rbm`.  
 
 ## Running a simulatuion
 Use:
 - `python main.py --config config/base_config.json --out outputs/run`
 
-Parameters from the JSON config file can be override using --set:
+the JSON file must contain all simulation parameters. Note that the simulation parameters change between simulation types (see below). Parameters from the JSON config file can be override using --set:
 - `python main.py --config config/base_config.json --out outputs/run --set domain.Nx=128`
 
 The simulation creates a folder of the form:
-outputs/run/sim_data_YYYYMMDD_HHMMSS/
+`outputs/run/sim_data_YYYYMMDD_HHMMSS/`
 
 which contains
 - `data.h5`
