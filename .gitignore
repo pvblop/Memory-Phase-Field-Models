@@ -1,0 +1,22 @@
+# Simulation outputs
+outputs/
+results/
+data/
+frames/
+videos/
+
+# Large files
+*.h5
+*.hdf5
+*.npz
+*.npy
+
+# Logs
+*.log
+
+# Temporary / cache
+__pycache__/
+*.pyc
+
+# Jupyter
+.ipynb_checkpoints/
