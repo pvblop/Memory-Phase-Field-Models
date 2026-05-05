@@ -1,0 +1,11 @@
+{
+  "domain": {"Lx": 50.0, "Ly": 50.0, "Nx": 128, "Ny": 128},
+  "time": {"T": 50.0, "save_every": 100},
+  "ic": {"seed": 1234, "noise_mag": 1e-2},
+  "beads": {"type": "pol", "rbm": 0.3, "x0": 25, "y0": 25.0, "sigma": 15.0, "t_dec": 51.0},
+  "params": {
+    "lam_psi": 1.0, "D_psi": 0, "v0": 0.0,
+    "lam_p": 0.0, "D_p": 1, "gamma": 1.0,
+    "alpha": 0.0, "rq": 0.0, "mu": 1.0, "poisson_iters": 100
+  }
+}
