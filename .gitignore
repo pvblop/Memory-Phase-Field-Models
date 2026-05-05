@@ -4,6 +4,11 @@ results/
 data/
 frames/
 videos/
+test*/
+*.png
+*.jpg
+*.gif
+*.avi
 
 # Large files
 *.h5
