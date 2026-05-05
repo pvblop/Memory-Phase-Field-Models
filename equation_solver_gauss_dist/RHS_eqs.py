@@ -131,7 +131,7 @@ def compute_rhs(psi_, px_, py_, qx_, qy_,
             term    = psi_val * (psi_val*psi_val - 1.0) \
                       - bd_dec * (rq * q_norm + rb[j, i]) * (1.0 - psi_val)
             out_psi[j, i] = -(divF[j, i] + gy[j, i]) \
-                             + D_psi * tmp[j, i] \
+                             + lam_psi * D_psi * tmp[j, i] \
                              - lam_psi * term
 
     # --- gradients of p (needed for advection) ---
@@ -144,12 +144,13 @@ def compute_rhs(psi_, px_, py_, qx_, qy_,
     laplacian_neumann(py_, Fy, dx, dy)   # reuse Fy as lap(py)
 
     # --- p equation ---
-    # Velocity field u = v0/2*(1+psi)*p + mu*gradP
+    # Velocity field u = v0*p + mu*gradP
     for j in prange(ny):
         for i in range(nx):
-            half_v0_rho = 0.5 * v0 * (1.0 + psi_[j, i])
-            ux = half_v0_rho * px_[j, i] + mu * gradPx[j, i]
-            uy = half_v0_rho * py_[j, i] + mu * gradPy[j, i]
+            # m = 0.5 * (1.0 + psi_[j, i])
+            m = 1.0
+            ux = v0 * px_[j, i] + mu * gradPx[j, i]
+            uy = v0 * py_[j, i] + mu * gradPy[j, i]
 
             adv_px = ux * gradxpx[j, i] + uy * gradypx[j, i]
             adv_py = ux * gradxpy[j, i] + uy * gradypy[j, i]
@@ -157,17 +158,15 @@ def compute_rhs(psi_, px_, py_, qx_, qy_,
             # BUG FIX: original code used px_**2 + px_**2 instead of px_**2 + py_**2
             p2 = px_[j, i]*px_[j, i] + py_[j, i]*py_[j, i]
 
-            out_px[j, i] = -lam_p * (
+            out_px[j, i] = -lam_p * m * (
                 px_[j, i] * (p2 - 1.0)
-                - D_p * Fx[j, i]
                 + gamma * (px_[j, i]- qx_[j, i])
-            ) - adv_px
+                - D_p * Fx[j, i]) - adv_px
 
-            out_py[j, i] = -lam_p * (
+            out_py[j, i] = -lam_p * m * (
                 py_[j, i] * (p2 - 1.0)
-                - D_p * Fy[j, i]
                 + gamma * (py_[j, i]- qy_[j, i])
-            ) - adv_py
+                - D_p * Fy[j, i]) - adv_py
 
     clamp_zero_boundary(out_px)
     clamp_zero_boundary(out_py)
