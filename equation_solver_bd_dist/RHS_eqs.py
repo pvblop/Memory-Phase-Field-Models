@@ -147,8 +147,8 @@ def compute_rhs(psi_, px_, py_, qx_, qy_,
     # Velocity field u = v0*p + mu*gradP
     for j in prange(ny):
         for i in range(nx):
-            # m = 0.5 * (1.0 + psi_[j, i])
-            m = 1.0
+            m = 0.5 * (1.0 + psi_[j, i])
+            # m = 1.0
             ux = v0 * px_[j, i] + mu * gradPx[j, i]
             uy = v0 * py_[j, i] + mu * gradPy[j, i]
 
@@ -158,14 +158,14 @@ def compute_rhs(psi_, px_, py_, qx_, qy_,
             # BUG FIX: original code used px_**2 + px_**2 instead of px_**2 + py_**2
             p2 = px_[j, i]*px_[j, i] + py_[j, i]*py_[j, i]
 
-            out_px[j, i] = -lam_p * m * (
-                px_[j, i] * (p2 - 1.0)
-                + gamma * (px_[j, i]- qx_[j, i])
+            out_px[j, i] = -lam_p * (
+                px_[j, i] * (p2 - m)
+                - gamma * (qx_[j, i])
                 - D_p * Fx[j, i]) - adv_px
 
-            out_py[j, i] = -lam_p * m * (
-                py_[j, i] * (p2 - 1.0)
-                + gamma * (py_[j, i]- qy_[j, i])
+            out_py[j, i] = -lam_p * (
+                py_[j, i] * (p2 - m)
+                - gamma * (qy_[j, i])
                 - D_p * Fy[j, i]) - adv_py
 
     clamp_zero_boundary(out_px)
