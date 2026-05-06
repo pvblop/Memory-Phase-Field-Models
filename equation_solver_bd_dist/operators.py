@@ -125,6 +125,7 @@ def beads_dist(Nbd, m_bd, sig_bd, dist, X, Y):
     
     if dist == 'one':
         # Single bead at center
+        bead_positions = np.zeros((1, 2))
         bead_positions[0, 0] = xmin + Lx / 2.0
         bead_positions[0, 1] = ymin + Ly / 2.0
     

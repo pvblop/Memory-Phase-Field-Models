@@ -4,11 +4,13 @@ results/
 data/
 frames/
 videos/
+eq_solver_bd_mask/
 test*/
 *.png
 *.jpg
 *.gif
 *.avi
+*.code-workspace
 
 # Large files
 *.h5
