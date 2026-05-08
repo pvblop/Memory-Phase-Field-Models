@@ -27,13 +27,13 @@ V0=(0.5 1.0 3.0)
 ALPHA=(0.1 0.5 1.0)
 RQ=(0.0 0.5 1.0)
 LAMP=(5.0)
-DP=(0.2)
+DP=(1.0)
 
 # Number of beads
 NB=(4 9 16 25 36 49 64 81 100)
 
-# Seeds / iterations
-IT=( $(seq 1 1 3) )
+# iterations
+IT=( $(seq 1 1 1) )
 
 run_one() {
     local geom="$1"
@@ -47,7 +47,7 @@ run_one() {
 
     local RUN_NAME="dist_${geom}_n_${nb}_v0_${v0}_alpha_${alpha}_rq_${rq}_lamp_${lamp}_Dp_${dp}"
 
-    local OUT_DIR="$OUTPUT_ROOT/$RUN_NAME/iter_${iter}"
+    local OUT_DIR="$OUTPUT_ROOT/$RUN_NAME"
 
     mkdir -p "$OUT_DIR"
 
