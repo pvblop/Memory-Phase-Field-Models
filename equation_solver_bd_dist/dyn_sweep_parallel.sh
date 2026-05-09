@@ -15,7 +15,7 @@ mkdir -p "$OUTPUT_ROOT"
 N_JOBS=8
 
 # Fixed bead parameters
-RM=1.0
+RM=0.5
 SIGMA=2.0
 DPSI=1.0
 
