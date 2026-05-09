@@ -159,12 +159,12 @@ def compute_rhs(psi_, px_, py_, qx_, qy_,
             p2 = px_[j, i]*px_[j, i] + py_[j, i]*py_[j, i]
 
             out_px[j, i] = -lam_p * (
-                px_[j, i] * (p2 - m)
+                px_[j, i] * (p2 + (1 - 2 * m))
                 - gamma * (qx_[j, i])
                 - D_p * Fx[j, i]) - adv_px
 
             out_py[j, i] = -lam_p * (
-                py_[j, i] * (p2 - m)
+                py_[j, i] * (p2 + (1 - 2 * m))
                 - gamma * (qy_[j, i])
                 - D_p * Fy[j, i]) - adv_py
 
