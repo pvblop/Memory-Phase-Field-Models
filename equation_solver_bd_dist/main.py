@@ -57,6 +57,7 @@ def main():
     m_bd       = cfg["beads"]["m_bd"]
     sig_bd     = cfg["beads"]["sig_bd"]
     dist       = cfg["beads"]["dist"]
+    l          = cfg["beads"]["l"]
     t_dec      = cfg["beads"]["t_dec"]
 
 
@@ -100,13 +101,13 @@ def main():
     py0[0,:]=py0[-1,:]=0; py0[:,0]=py0[:,-1]=0
 
     # generate rb field
-    rb, bead_positions = beads_dist(N_bd, m_bd, sig_bd, dist, X, Y)
+    rb, bead_positions = beads_dist(N_bd, m_bd, sig_bd, dist, l, X, Y)
 
-    Dmax = max(D_psi, D_p)
+    Dmax = max(lam_psi * D_psi, lam_p * D_p)
     dt_diff = suggest_dt(dx, dy, Dmax, safety=0.2)
     dt = min(dt_diff, 0.05 * min(dx,dy)/(abs(v0)+1e-12))
     print(f"Suggested dt based on diffusion: {dt_diff:.4e}, using dt={dt:.4e}")
-    save_every = int(np.round(T / dt)) // 4
+    save_every = int(np.round(T / dt)) // 10
 
     ### COPY JSON CONFIG WITH USED PARAMETERS TO OUTPUT FOLDER ###
     from datetime import datetime

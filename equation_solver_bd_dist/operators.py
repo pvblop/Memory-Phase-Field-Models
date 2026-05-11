@@ -101,7 +101,7 @@ def suggest_dt(dx, dy, Dmax, safety=0.2):
     # For explicit schemes in 2D diffusion: dt <= 1/(2D(1/dx^2+1/dy^2))
     return safety / (2.0 * Dmax * (1.0/dx**2 + 1.0/dy**2))
 
-def beads_dist(Nbd, m_bd, sig_bd, dist, X, Y):
+def beads_dist(Nbd, m_bd, sig_bd, dist, l, X, Y):
     """
     Generate a distribution of Nbd beads as Gaussian functions in an equal-spaced square grid.
     
@@ -109,7 +109,8 @@ def beads_dist(Nbd, m_bd, sig_bd, dist, X, Y):
     - Nbd: number of beads
     - m_bd: maximum amplitude of each bead
     - sig_bd: standard deviation of each bead's Gaussian profile
-    - dist: distribution type ('pol', 'homo', or 'one')
+    - dist: distribution type ('pol', 'homo', or 'two')
+    - l: distance between two beads
     - X, Y: meshgrid of spatial coordinates
     
     Returns:
@@ -123,10 +124,14 @@ def beads_dist(Nbd, m_bd, sig_bd, dist, X, Y):
     bd = np.zeros_like(X)
     bead_positions = np.zeros((Nbd, 2))
     
-    if dist == 'one':
+    if dist == 'two':
         # Single bead at center
-        bead_positions[0, 0] = xmin + Lx / 2.0
+        bead_positions = np.zeros((2, 2))
+
+        bead_positions[0, 0] = xmin + (Lx / 2.0 - l / 2.0)
         bead_positions[0, 1] = ymin + Ly / 2.0
+        bead_positions[1, 0] = xmin + (Lx / 2.0 + l / 2.0)
+        bead_positions[1, 1] = ymin + Ly / 2.0
     
     else:
         # Create equal-spaced square grid

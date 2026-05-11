@@ -30,7 +30,7 @@ LAMP=(5.0)
 DP=(1.0)
 
 # Number of beads
-NB=(4 9 16 25 36 49 64 81 100)
+NB=(2)
 
 # iterations
 IT=( $(seq 1 1 1) )
