@@ -8,7 +8,7 @@ export NUMBA_NUM_THREADS=1
 
 PYTHON=python
 BASE_CONFIG="config/base_pol.json"
-OUTPUT_ROOT="outputs/dynamics_sweep"
+OUTPUT_ROOT="outputs/dynamics_sweep_p_dens"
 mkdir -p "$OUTPUT_ROOT"
 
 # Number of simulations running simultaneously
