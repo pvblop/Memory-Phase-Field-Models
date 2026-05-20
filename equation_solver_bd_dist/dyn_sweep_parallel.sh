@@ -15,7 +15,7 @@ mkdir -p "$OUTPUT_ROOT"
 N_JOBS=8
 
 # Fixed bead parameters
-RM=1.0
+RM=0.5
 SIGMA=2.0
 DPSI=1.0
 
@@ -30,10 +30,10 @@ LAMP=(5.0)
 DP=(0.2)
 
 # Number of beads
-NB=(4 9 16 25 36 49 64 81 100)
+NB=(1 4 9 16 25 36 49 64 81 100)
 
 # Seeds / iterations
-IT=( $(seq 1 1 3) )
+IT=( $(seq 1 1 1) )
 
 run_one() {
     local geom="$1"
@@ -76,6 +76,6 @@ export -f run_one
 export PYTHON BASE_CONFIG OUTPUT_ROOT RM SIGMA DPSI
 
 parallel -j "$N_JOBS" --halt soon,fail=1 \
-    run_one ::: "${GEOMETRY[@]}" ::: "${NB[@]}" ::: "${V0[@]}" ::: "${ALPHA[@]}" ::: "${RQ[@]}" ::: "${LAMP[@]}" ::: "${DP[@]}" ::: "${IT[@]}"
+    run_one ::: "${GEOMETRY[@]}" ::: "${NB[@]}" ::: "${V0[@]}" ::: "${ALPHA[@]}" ::: "${RQ[@]}" ::: "${LAMP[@]}" ::: "${DP[@]}" ::: "${1}"
 
 echo "Sweep complete. Results in $OUTPUT_ROOT/"
