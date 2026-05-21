@@ -87,7 +87,7 @@ for i in range(0, len(psi_hist), args.step):
     plt.savefig(fig_name, dpi=300)
     plt.close(fig)
 
-    plt.imshow(divJrho_hist[i], origin='lower', extent=[0, Lx, 0, Ly], cmap='Reds')
-    plt.colorbar(label=r'$\nabla \cdot J_\rho$')
-    plt.savefig(f'{filename}/divJrho_{i:04d}.png', dpi=300)
-    plt.close()
+    # plt.imshow(divJrho_hist[i], origin='lower', extent=[0, Lx, 0, Ly], cmap='Reds')
+    # plt.colorbar(label=r'$\nabla \cdot J_\rho$')
+    # plt.savefig(f'{filename}/divJrho_{i:04d}.png', dpi=300)
+    # plt.close()
