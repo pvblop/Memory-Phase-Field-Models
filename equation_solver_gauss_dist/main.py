@@ -110,6 +110,7 @@ def main():
 
     # generate rb field
     rb = beads_dist(bd_type, rbm, X, Y, x0, y0, sigma) if bd_type == "pol" else beads_dist(bd_type, rbm, X, Y, None, None, None)
+    Nbd = np.sum(rb) * dx * dy
 
     Dmax = max(D_psi, D_p)
     dt_diff = suggest_dt(dx, dy, Dmax, safety=0.2)
@@ -178,6 +179,7 @@ def main():
         grid_group.attrs['Ny'] = Ny
         grid_group.attrs['dx'] = dx
         grid_group.attrs['dy'] = dy
+        grid_group.attrs['Nbd'] = Nbd
         
         # Save equation parameters
         params_group.attrs['lam_psi'] = lam_psi
