@@ -15,7 +15,7 @@ def parse_args():
 
 args = parse_args()
 
-h5_path = os.path.join(args.dir, 'data.h5')
+h5_path = os.path.join(args.dir, 'data_reduced.h5')
 if os.path.isfile(h5_path):
     print(f"loading simulation data from {h5_path}")
     with h5py.File(h5_path, 'r') as f:
