@@ -8,10 +8,10 @@ export OPENBLAS_NUM_THREADS=1
 
 PYTHON=python
 BASE_CONFIG="config/base_pol.json"
-OUTPUT_ROOT="outputs/differentiation_sweep"
+OUTPUT_ROOT="outputs/dyn_sweep"
 mkdir -p "$OUTPUT_ROOT"
 
-N_JOBS=8
+N_JOBS=12
 
 RBMS=(0.1 0.2 0.3 0.5 0.7 0.9 1.0)
 DPSI=(0.01 0.5 1.0)
