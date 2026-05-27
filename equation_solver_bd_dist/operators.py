@@ -129,32 +129,29 @@ def beads_dist(Nbd, m_bd, sig_bd, dist, X, Y):
         bead_positions[0, 1] = ymin + Ly / 2.0
     
     else:
-        # Create equal-spaced square grid
-        # Calculate grid dimensions: sqrt(Nbd) x sqrt(Nbd)
-        nx = int(np.ceil(np.sqrt(Nbd)))
-        ny = nx  # Make it square
-        
+        # Random bead positions
+
         if dist == 'pol':
-            # Beads in half domain (0 to Lx/2, 0 to Ly/2)
-            x_grid = np.linspace(xmin, xmin + Lx / 2.0, nx)
-            y_grid = np.linspace(ymin, ymin + Ly / 2.0, ny)
+            # Beads only in half domain
+            x_bd = np.random.uniform(xmin, xmin + Lx/2.0, Nbd)
+            y_bd = np.random.uniform(ymin, ymin + Ly/2.0, Nbd)
+
         elif dist == 'homo':
-            # Beads in full domain
-            x_grid = np.linspace(xmin, xmin + Lx, nx)
-            y_grid = np.linspace(ymin, ymin + Ly, ny)
+            # Beads in entire domain
+            x_bd = np.random.uniform(xmin, xmin + Lx, Nbd)
+            y_bd = np.random.uniform(ymin, ymin + Ly, Nbd)
+
         else:
-            # Default to full domain
-            x_grid = np.linspace(xmin, xmin + Lx, nx)
-            y_grid = np.linspace(ymin, ymin + Ly, ny)
+            # Default: full domain
+            x_bd = np.random.uniform(xmin, xmin + Lx, Nbd)
+            y_bd = np.random.uniform(ymin, ymin + Ly, Nbd)
         
         # Create 2D grid and fill bead positions
         idx = 0
-        for j in range(ny):
-            for i in range(nx):
-                if idx < Nbd:
-                    bead_positions[idx, 0] = x_grid[i]
-                    bead_positions[idx, 1] = y_grid[j]
-                    idx += 1
+        while idx < Nbd:
+            bead_positions[idx, 0] = x_bd[idx]
+            bead_positions[idx, 1] = y_bd[idx]
+            idx += 1
 
     # Create Gaussian bead profiles
     for i in range(Nbd):

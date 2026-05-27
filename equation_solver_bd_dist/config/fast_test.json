@@ -1,6 +1,6 @@
 {
   "domain": {"Lx": 50.0, "Ly": 50.0, "Nx": 64, "Ny": 64},
-  "time": {"T":100.0},
+  "time": {"T":10.0},
   "ic": {"seed":1111, "noise_mag": 1e-1},
   "beads": {"N_bd": 10, "m_bd": 0.2, "sig_bd": 2.0, "dist": "homo", "t_dec": 50.0},
   "params": {

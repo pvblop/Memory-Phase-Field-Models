@@ -13,14 +13,14 @@ RQ=0.0
 V0=0.0
 
 # Sweep parameters
-NB=(4 9 16 25 36 49 64 81 100)
+NB=(1 4 9 16 25 36 49 64 81 100)
 RM=(0.1 0.25 0.5 1.0 1.5)
 SIGMA=(0.1 0.5 1.0 1.5 2.0)
-DPSI=(0.001 0.1 1.0 1.5)
+DPSI=(1.0)
 DIST=("homo" "pol")
 
 # Initial-condition / bead-position iterations
-IT=( $(seq 1 1 1) )
+IT=( $(seq 1 1 10) )
 
 for dist in "${DIST[@]}"; do
   for nb in "${NB[@]}"; do
