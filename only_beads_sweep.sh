@@ -9,7 +9,7 @@ PYTHON=python
 # If you use a virtual environment, set e.g. PYTHON=~/.venv/bin/python
 
 BASE_CONFIG="config/base_pol.json"
-OUTPUT_ROOT="outputs/differentiation_sweep"
+OUTPUT_ROOT="outputs/differentiation_sweep_2"
 mkdir -p "$OUTPUT_ROOT"
 cp run_param_sweep.sh "$OUTPUT_ROOT/"  # Save a copy of this script for reference
 
