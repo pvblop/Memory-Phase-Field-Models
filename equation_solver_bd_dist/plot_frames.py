@@ -53,52 +53,85 @@ from matplotlib.colors import LinearSegmentedColormap
 colors = ["#b2182b", "#ffffff", "#e0e000e1"]
 cmap = LinearSegmentedColormap.from_list("stem_to_diff", colors)
 
+
 # iterate frames
 for i in range(0, len(psi_hist), args.step):
-    fig, axs = plt.subplots(1, 3, figsize=(15, 4))
+    fig, axs = plt.subplots(1, 2, figsize=(10, 4))
     fig.suptitle(f'Time = {t[i]:.2f}')
-
-
+    
     stride = 8
     Y_q, X_q = np.meshgrid(y[::stride], x[::stride], indexing='ij')
 
-    # psi field
-    im0 = axs[0].imshow(psi_hist[i], origin='lower', extent=[0, Lx, 0, Ly], cmap=cmap, vmin=-1, vmax=1)
-    axs[0].set_title(r'$\psi$')
-    axs[0].set_xlabel('x')
-    axs[0].set_ylabel('y')
+    # meso-endoderm mask: show polarization mainly where psi ~ differentiated
+    m = 0.5 * (1.0 + psi_hist[i])
+
+    # psi field + polarization direction
+    im0 = axs[0].imshow(
+        psi_hist[i],
+        origin='lower',
+        extent=[0, Lx, 0, Ly],
+        cmap=cmap,
+        vmin=-1,
+        vmax=1
+    )
+
+    p_quiver_x = px_hist[i] * m
+    p_quiver_y = py_hist[i] * m
+
+    axs[0].quiver(
+        X_q, Y_q,
+        p_quiver_x[::stride, ::stride],
+        p_quiver_y[::stride, ::stride],
+        color='k',
+        alpha=0.65,
+        scale_units='xy',
+        scale=0.1,
+        width=0.004
+    )
+
     if bead_positions is not None:
         axs[0].scatter(bead_positions[:, 0], bead_positions[:, 1], c='w', marker='o', alpha=0.5, edgecolors='w')
     plt.colorbar(im0, ax=axs[0], label=r'$\psi$')
 
-    # p field with quiver
-    mag = np.sqrt(px_hist[i] ** 2 + py_hist[i] ** 2)
-    m = 0.5 * (1.0 + psi_hist[i])
-    # m = 1
-    quiver_x = (px_hist[i] * m)
-    quiver_y = (py_hist[i] * m)
 
-    axs[1].quiver(X_q, Y_q, quiver_x[::stride, ::stride], quiver_y[::stride, ::stride], alpha=0.6, scale_units='xy', scale=0.1)
-    im1 = axs[1].imshow(m*mag, origin='lower', extent=[0, Lx, 0, Ly], cmap='Reds', vmin=0, vmax=1)
-    axs[1].set_title(r'$0.5(1 + \psi) \mathbf{p}$')
+    axs[0].set_title(r'$\psi$ with $\mathbf{p}$')
+    axs[0].set_xlabel('x')
+    axs[0].set_ylabel('y')
+    plt.colorbar(im0, ax=axs[0], label=r'$\psi$')
+
+    # q magnitude + q direction
+    q_mag = np.sqrt(qx_hist[i] ** 2 + qy_hist[i] ** 2)
+    im1 = axs[1].imshow(
+        q_mag,
+        origin='lower',
+        extent=[0, Lx, 0, Ly],
+        cmap='Reds',
+        vmin=0,
+        vmax=1
+    )
+
+    axs[1].quiver(
+        X_q, Y_q,
+        qx_hist[i][::stride, ::stride],
+        qy_hist[i][::stride, ::stride],
+        color='k',
+        alpha=0.65,
+        scale_units='xy',
+        scale=0.1,
+        width=0.004
+    )
+    axs[1].set_title(r'$|\mathbf{q}|$ with $\mathbf{q}$')
     axs[1].set_xlabel('x')
     axs[1].set_ylabel('y')
-    plt.colorbar(im1, ax=axs[1], label=r'$|0.5(1 + \psi)\mathbf{p}|$')
+    plt.colorbar(im1, ax=axs[1], label=r'$|\mathbf{q}|$')
 
-    # q field with quiver
-    im2 = axs[2].imshow(np.sqrt(qx_hist[i] ** 2 + qy_hist[i] ** 2), origin='lower', extent=[0, Lx, 0, Ly], cmap='Reds', vmin=0, vmax=1)
-    qx_quiver = qx_hist[i] 
-    qy_quiver = qy_hist[i] 
-    axs[2].quiver(X_q, Y_q, qx_quiver[::stride, ::stride], qy_quiver[::stride, ::stride], alpha=0.6,  scale_units='xy', scale=0.1)
-    axs[2].set_title(r'$\mathbf{q}$')
-    axs[2].set_xlabel('x')
-    axs[2].set_ylabel('y')
-    plt.colorbar(im2, ax=axs[2], label=r'$|\mathbf{q}|$')
+    for ax in axs:
+        ax.set_aspect('equal')
 
     plt.tight_layout()
     
     fig_name = f'{filename}/frame_{i:04d}.png'
-    plt.savefig(fig_name, dpi=50)
+    plt.savefig(fig_name, dpi=300)
     plt.close(fig)
 
     # plt.imshow(divJrho_hist[i], origin='lower', extent=[0, Lx, 0, Ly], cmap='Reds')
