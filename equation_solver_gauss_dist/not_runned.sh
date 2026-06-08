@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-OUTDIR="outputs"
+OUTDIR="outputs/differentiation_sweep"
 
 RBMS=($(seq 0.1 0.1 1.0))
 SIG=($(seq 0.5 0.5 15.0))
@@ -17,10 +17,11 @@ for rbm in "${RBMS[@]}"; do
 for x0 in "${X0[@]}"; do
 for dpsi in "${DPSI[@]}"; do
 
-    sim="${dist} ${sig} ${rbm} ${x0} ${dpsi}"
+    sim="dist_${dist}_sig_${sig}_rbm_${rbm}_x0_${x0}_dpsi_${dpsi}"
+    sim_txt="${dist} ${sig} ${rbm} ${x0} ${dpsi}"
 
-    if [ ! -f "${OUTDIR}/${sim}/data.h5" ]; then
-        echo "$sim" >> "$MISSING"
+    if ! find "${OUTDIR}/${sim}" -path '*/data.h5' -print -quit | grep -q .; then
+    echo "$sim_txt" >> "$MISSING"
     fi
 
 done
