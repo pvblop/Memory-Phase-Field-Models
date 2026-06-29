@@ -100,7 +100,11 @@ def compute_rhs(psi_, px_, py_, qx_, qy_,
     this function (in solve_gradP_dct) and the resulting gradPx/gradPy
     are passed in — this keeps compute_rhs as a pure @njit kernel.
     """
-    lam_psi, D_psi, v0, lam_p, D_p, gamma, alpha, rq, mu, t_dec, dx, dy = params
+    # New polarization/memory model from Sec. 3.2 of the notes:
+    #   dt p + (u.grad)p = -a_p p - b_p |p|^2 p + chi q + D_p lap(p)
+    #   dt q = alpha * m(psi) * p - u_q |q|^2 q
+    # lam_p is kept as an overall kinetic prefactor for the p equation.
+    lam_psi, D_psi, v0, lam_p, D_p, a_p, b_p, chi, alpha, u_q, rq, mu, t_dec, dx, dy = params
     ny, nx = psi_.shape
 
     # --- |q| norm (gx reused as qnorm) ---
@@ -155,18 +159,21 @@ def compute_rhs(psi_, px_, py_, qx_, qy_,
             adv_px = ux * gradxpx[j, i] + uy * gradypx[j, i]
             adv_py = ux * gradxpy[j, i] + uy * gradypy[j, i]
 
-            # BUG FIX: original code used px_**2 + px_**2 instead of px_**2 + py_**2
             p2 = px_[j, i]*px_[j, i] + py_[j, i]*py_[j, i]
 
-            out_px[j, i] = -lam_p * m * (
-                px_[j, i] * (p2 - 1.0)
-                + gamma * (px_[j, i]- qx_[j, i])
-                - D_p * Fx[j, i]) - adv_px
+            out_px[j, i] = lam_p * (
+                -a_p * px_[j, i]
+                -b_p * p2 * px_[j, i]
+                + chi * qx_[j, i]
+                + D_p * Fx[j, i]
+            ) - adv_px
 
-            out_py[j, i] = -lam_p * m * (
-                py_[j, i] * (p2 - 1.0)
-                + gamma * (py_[j, i]- qy_[j, i])
-                - D_p * Fy[j, i]) - adv_py
+            out_py[j, i] = lam_p * (
+                -a_p * py_[j, i]
+                -b_p * p2 * py_[j, i]
+                + chi * qy_[j, i]
+                + D_p * Fy[j, i]
+            ) - adv_py
 
     clamp_zero_boundary(out_px)
     clamp_zero_boundary(out_py)
@@ -174,6 +181,7 @@ def compute_rhs(psi_, px_, py_, qx_, qy_,
     # --- q equation ---
     for j in prange(ny):
         for i in range(nx):
-            factor = alpha * 0.5 * (1.0 + psi_[j, i]) * (1.0 - gx[j, i])
-            out_qx[j, i] = factor * px_[j, i]
-            out_qy[j, i] = factor * py_[j, i]
+            m = 0.5 * (1.0 + psi_[j, i])
+            q2 = qx_[j, i]*qx_[j, i] + qy_[j, i]*qy_[j, i]
+            out_qx[j, i] = alpha * m * px_[j, i] - u_q * q2 * qx_[j, i]
+            out_qy[j, i] = alpha * m * py_[j, i] - u_q * q2 * qy_[j, i]

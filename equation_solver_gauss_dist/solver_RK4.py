@@ -53,9 +53,9 @@ def rk4_step(
     
     t parameter is the current time (used for bead decay calculation).
     """
-    lam_psi, D_psi, _, lam_p, D_p, gamma, alpha, rq, _, t_dec, _, _, dt = params
-    # Build a params tuple as expected by compute_rhs: (lam_psi, D_psi, v0, lam_p, D_p, gamma, alpha, rq, mu, t_dec, dx, dy)
-    rhs_params = (lam_psi, D_psi, v0, lam_p, D_p, gamma, alpha, rq, mu, t_dec, dx, dy)
+    lam_psi, D_psi, _, lam_p, D_p, a_p, b_p, chi, alpha, u_q, rq, _, t_dec, _, _, dt = params
+    # Build a params tuple as expected by compute_rhs.
+    rhs_params = (lam_psi, D_psi, v0, lam_p, D_p, a_p, b_p, chi, alpha, u_q, rq, mu, t_dec, dx, dy)
 
     # ----- k1 -----
     solve_gradP_dct(psi, px, py, gradPx, gradPy,
@@ -135,7 +135,7 @@ def simulate_rk4_numba(
     rb, Lx, Ly, T, dt, save_every,
     params
 ):
-    lam_psi, D_psi, v0, lam_p, D_p, gamma, alpha, rq, mu, t_dec, dx, dy, dt = params
+    lam_psi, D_psi, v0, lam_p, D_p, a_p, b_p, chi, alpha, u_q, rq, mu, t_dec, dx, dy, dt = params
 
     psi = psi0.copy()
     px  = px0.copy()

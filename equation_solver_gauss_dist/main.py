@@ -67,8 +67,13 @@ def main():
     v0         = cfg["params"]["v0"]
     lam_p      = cfg["params"]["lam_p"]
     D_p        = cfg["params"]["D_p"]
-    gamma      = cfg["params"]["gamma"]
+    # New p/q parameters. Fallbacks keep older JSON files usable:
+    # a_p <- gamma if not provided, b_p <- 1, chi <- gamma, u_q <- 1.
+    a_p        = cfg["params"].get("a_p", cfg["params"].get("gamma", 1.0))
+    b_p        = cfg["params"].get("b_p", 1.0)
+    chi        = cfg["params"].get("chi", cfg["params"].get("gamma", 0.0))
     alpha      = cfg["params"]["alpha"]
+    u_q        = cfg["params"].get("u_q", 1.0)
     rq         = cfg["params"]["rq"]
     mu         = cfg["params"]["mu"]
 
@@ -116,7 +121,7 @@ def main():
     dt_diff = suggest_dt(dx, dy, Dmax, safety=0.2)
     dt = min(dt_diff, 0.05 * min(dx,dy)/(abs(v0)+1e-12))
     print(f"Suggested dt based on diffusion: {dt_diff:.4e}, using dt={dt:.4e}")
-    save_every = int(np.round(T / dt)) // 4
+    save_every = max(1, int(np.round(T / dt)) // 4)
 
     ### COPY JSON CONFIG WITH USED PARAMETERS TO OUTPUT FOLDER ###
     from datetime import datetime
@@ -133,7 +138,7 @@ def main():
 
 
     ### MAIN SIMULATION LOOP ###
-    params = (lam_psi, D_psi, v0, lam_p, D_p, gamma, alpha, rq, mu, t_dec, dx, dy, dt)
+    params = (lam_psi, D_psi, v0, lam_p, D_p, a_p, b_p, chi, alpha, u_q, rq, mu, t_dec, dx, dy, dt)
 
     t, psi_hist, px_hist, py_hist, qx_hist, qy_hist, P_hist, gradPx_hist, gradPy_hist, divJrho_hist = simulate_rk4_numba(
         psi0, px0, py0, qx0, qy0,
@@ -187,8 +192,11 @@ def main():
         params_group.attrs['v0'] = v0
         params_group.attrs['lam_p'] = lam_p
         params_group.attrs['D_p'] = D_p
-        params_group.attrs['gamma'] = gamma
+        params_group.attrs['a_p'] = a_p
+        params_group.attrs['b_p'] = b_p
+        params_group.attrs['chi'] = chi
         params_group.attrs['alpha'] = alpha
+        params_group.attrs['u_q'] = u_q
         params_group.attrs['rq'] = rq
         params_group.attrs['rbm'] = rbm
 
