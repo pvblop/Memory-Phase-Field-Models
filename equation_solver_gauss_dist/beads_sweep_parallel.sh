@@ -11,14 +11,14 @@ BASE_CONFIG="config/base_pol.json"
 OUTPUT_ROOT="outputs/differentiation_sweep"
 mkdir -p "$OUTPUT_ROOT"
 
-N_JOBS=8
+N_JOBS=4
 
-# RBMS=(0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0)
-RBMS=($(seq 0.1 0.1 1.0))
-# SIG=(3.0 3.5 4.0 4.5 5.0 5.5 7.5 10.0 12.5 15.0)
-SIG=($(seq 0.5 0.5 15.0))
-DPSI=(1.0 3.0 5.0 7.0 10.0 15.0 20.0 25.0 30.0)
-X0=(25.0)
+RBMS=(0.26 1.0)
+# RBMS=($(seq 0.1 0.1 1.0))
+SIG=(15.0 20.0 25.0 30.0)
+# SIG=($(seq 0.5 0.5 15.0))
+DPSI=(1.0)
+X0=(12.5 25.0)
 IT=(1)
 
 DIST=("pol")
@@ -51,7 +51,7 @@ run_one() {
         "beads.sigma=$sig" \
         "beads.rbm=$rbm" \
         "beads.x0=$x0" \
-        "params.dpsi=$dpsi" \
+        "params.D_psi=$dpsi" \
         "params.rq=$RQ" \
         "params.v0=$V0" \
         "params.alpha=$ALPHA" \

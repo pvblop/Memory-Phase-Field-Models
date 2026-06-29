@@ -1,11 +1,11 @@
 {
-  "domain": {"Lx": 50.0, "Ly": 50.0, "Nx": 256, "Ny": 256},
+  "domain": {"Lx": 50.0, "Ly": 50.0, "Nx": 128, "Ny": 128},
   "time": {"T":100.0},
   "ic": {"noise_mag": 1e-1},
   "beads": {"type": "pol", "rbm": 0.5, "x0": 12.5, "y0": 25.0, "sigma": 20.0, "t_dec": 50.0},
   "params": {
-    "lam_psi": 1.0, "D_psi": 1.0, "v0": 0.0,
-    "lam_p": 1.0, "D_p": 1.0, "gamma": 1.0,
-    "alpha": 0.2, "rq": 0.0, "mu": 1.0
+    "lam_psi": 1.0, "D_psi": 1.0, "v0": 1.0,
+    "lam_p": 5.0, "D_p": 1.0, "gamma": 1.0,
+    "alpha": 0.5, "rq": 0.0, "mu": 1.0
   }
 }

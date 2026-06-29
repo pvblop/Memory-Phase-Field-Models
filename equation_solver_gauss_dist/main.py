@@ -121,7 +121,7 @@ def main():
     ### COPY JSON CONFIG WITH USED PARAMETERS TO OUTPUT FOLDER ###
     from datetime import datetime
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    folder = f"{args.out}/sim_data_{timestamp}"
+    folder = f"{args.out}/sim_data_{timestamp}_it_{seed}"
     cfg_used = deepcopy(cfg)
     cfg_used["time"]["dt_used"] = dt
     cfg_used["time"]["save_every"] = save_every
