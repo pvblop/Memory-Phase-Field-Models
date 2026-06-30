@@ -26,17 +26,16 @@ def poisson_neumann_dct(rhsP, dx, dy, denom):
     using a DCT-based fast Poisson solver.  O(N log N), no iteration.
 
     Returns P with zero mean.  denom is precomputed by _get_dct_denom.
+
+    rhsP is assumed to already have zero mean (compute_rhsP calls
+    subtract_mean), so the compatibility condition is satisfied.  Zeroing
+    the DC coefficient of the orthonormal DCT guarantees a zero-mean P, so
+    the previous explicit mean subtractions are redundant and removed.
     """
-    rhsP = rhsP - rhsP.mean()          # ensure compatibility condition
-
-    rhs_hat = dctn(rhsP, type=2, norm='ortho')
-
-    P_hat = rhs_hat / denom            # vectorised divide (denom[0,0]==1)
-    P_hat[0, 0] = 0.0                  # zero-mean gauge
-
-    P = idctn(P_hat, type=2, norm='ortho')
-    P -= P.mean()
-    return P
+    rhs_hat = dctn(rhsP, type=2, norm='ortho', overwrite_x=True)
+    rhs_hat /= denom            # in-place vectorised divide (denom[0,0]==1)
+    rhs_hat[0, 0] = 0.0         # zero-mean gauge
+    return idctn(rhs_hat, type=2, norm='ortho', overwrite_x=True)
 
 
 @njit(cache=True, fastmath=True, parallel=True)

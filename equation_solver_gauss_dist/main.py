@@ -2,33 +2,9 @@ import numpy as np
 from operators import suggest_dt, beads_dist
 from solver_RK4 import simulate_rk4_numba
 from operators import suggest_dt
+from config_io import set_in_dict, parse_value, write_h5
 import argparse, json, os
 from copy import deepcopy
-
-def set_in_dict(d, key_path, value):
-    """
-    key_path like 'params.rq' or 'domain.Nx'
-    """
-    keys = key_path.split(".")
-    cur = d
-    for k in keys[:-1]:
-        cur = cur[k]
-    cur[keys[-1]] = value
-
-def parse_value(s):
-    # tries int, float, bool, else string
-    sl = s.lower()
-    if sl in ("true", "false"):
-        return sl == "true"
-    try:
-        return int(s)
-    except ValueError:
-        pass
-    try:
-        return float(s)
-    except ValueError:
-        pass
-    return s
 
 def main():
     ap = argparse.ArgumentParser()
@@ -67,8 +43,6 @@ def main():
     v0         = cfg["params"]["v0"]
     lam_p      = cfg["params"]["lam_p"]
     D_p        = cfg["params"]["D_p"]
-    # New p/q parameters. Fallbacks keep older JSON files usable:
-    # a_p <- gamma if not provided, b_p <- 1, chi <- gamma, u_q <- 1.
     a_p        = cfg["params"].get("a_p", cfg["params"].get("gamma", 1.0))
     b_p        = cfg["params"].get("b_p", 1.0)
     chi        = cfg["params"].get("chi", cfg["params"].get("gamma", 0.0))
@@ -121,7 +95,7 @@ def main():
     dt_diff = suggest_dt(dx, dy, Dmax, safety=0.2)
     dt = min(dt_diff, 0.05 * min(dx,dy)/(abs(v0)+1e-12))
     print(f"Suggested dt based on diffusion: {dt_diff:.4e}, using dt={dt:.4e}")
-    save_every = max(1, int(np.round(T / dt)) // 4)
+    save_every = max(1, int(np.round(T / dt)) // 100)
 
     ### COPY JSON CONFIG WITH USED PARAMETERS TO OUTPUT FOLDER ###
     from datetime import datetime
@@ -149,67 +123,25 @@ def main():
 
     ### SAVE DATA ###
 
-    import h5py
-        # Create filename with timestamp
-    filename = f"data.h5"
-    os.makedirs(folder, exist_ok=True)
-
-    # Save data to HDF5 file
-    with h5py.File(f"{folder}/{filename}", 'w') as f:
-        # Create groups
-        solution_group = f.create_group('solution')
-        params_group = f.create_group('parameters')
-        grid_group = f.create_group('grid')
-        
-        # Save solution data
-        solution_group.create_dataset('psi_hist', data=psi_hist)
-        solution_group.create_dataset('px_hist', data=px_hist)
-        solution_group.create_dataset('py_hist', data=py_hist)
-        solution_group.create_dataset('qx_hist', data=qx_hist)
-        solution_group.create_dataset('qy_hist', data=qy_hist)
-        solution_group.create_dataset('P_hist', data=P_hist)
-        solution_group.create_dataset('gradPx_hist', data=gradPx_hist)
-        solution_group.create_dataset('gradPy_hist', data=gradPy_hist)
-        solution_group.create_dataset('divJrho_hist', data=divJrho_hist)
-
-        solution_group.create_dataset('t', data=t)
-        
-        # Save grid information
-        grid_group.create_dataset('x', data=x)
-        grid_group.create_dataset('y', data=y)
-        grid_group.create_dataset('rb', data=rb)
-        grid_group.attrs['Lx'] = Lx
-        grid_group.attrs['Ly'] = Ly
-        grid_group.attrs['Nx'] = Nx
-        grid_group.attrs['Ny'] = Ny
-        grid_group.attrs['dx'] = dx
-        grid_group.attrs['dy'] = dy
-        grid_group.attrs['Nbd'] = Nbd
-        
-        # Save equation parameters
-        params_group.attrs['lam_psi'] = lam_psi
-        params_group.attrs['D_psi'] = D_psi
-        params_group.attrs['v0'] = v0
-        params_group.attrs['lam_p'] = lam_p
-        params_group.attrs['D_p'] = D_p
-        params_group.attrs['a_p'] = a_p
-        params_group.attrs['b_p'] = b_p
-        params_group.attrs['chi'] = chi
-        params_group.attrs['alpha'] = alpha
-        params_group.attrs['u_q'] = u_q
-        params_group.attrs['rq'] = rq
-        params_group.attrs['rbm'] = rbm
-
-        # Save time parameters
-        params_group.attrs['T_final'] = T
-        params_group.attrs['dt'] = dt
-        params_group.attrs['save_every'] = save_every
-        
-        # Add metadata
-        f.attrs['created'] = timestamp
-        f.attrs['description'] = 'Phase field simulation with coupled psi, p, q fields'
-
-    print(f"Data saved to: {filename}")
+    solution = {
+        "psi_hist": psi_hist, "px_hist": px_hist, "py_hist": py_hist,
+        "qx_hist": qx_hist, "qy_hist": qy_hist, "P_hist": P_hist,
+        "gradPx_hist": gradPx_hist, "gradPy_hist": gradPy_hist,
+        "divJrho_hist": divJrho_hist,
+    }
+    grid = {
+        "x": x, "y": y, "rb": rb, "Lx": Lx, "Ly": Ly, "Nx": Nx, "Ny": Ny,
+        "dx": dx, "dy": dy, "Nbd": Nbd,
+    }
+    params_out = {
+        "lam_psi": lam_psi, "D_psi": D_psi, "v0": v0, "lam_p": lam_p,
+        "D_p": D_p, "a_p": a_p, "b_p": b_p, "chi": chi, "alpha": alpha,
+        "u_q": u_q, "rq": rq, "rbm": rbm,
+        "T_final": T, "dt": dt, "save_every": save_every,
+    }
+    path = write_h5(folder, solution=solution, t=t, grid=grid,
+                    params=params_out, timestamp=timestamp)
+    print(f"Data saved to: {path}")
 
 if __name__ == "__main__":
     main()

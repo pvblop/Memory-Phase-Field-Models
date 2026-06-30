@@ -1,8 +1,18 @@
+import os
 from numba import njit, prange
+import numba
 import numpy as np
 from RHS_eqs import compute_rhs, solve_gradP_dct
 from operators import clamp_zero_boundary, check_current_rho
 from tqdm import trange
+
+# On the typical grids used here (~100x100) the per-operator parallel region
+# launch overhead dominates the tiny amount of work, so a single thread is
+# fastest.  The sweep scripts also run many simulations concurrently, where
+# extra threads would only oversubscribe the cores.  Override with the
+# SIM_THREADS environment variable for large single runs (e.g. 512x512).
+_SIM_THREADS = max(1, int(os.environ.get("SIM_THREADS", "1")))
+numba.set_num_threads(_SIM_THREADS)
 
 
 @njit(cache=True, fastmath=True, parallel=True)
@@ -25,12 +35,21 @@ def _rk4_combine(psi, px, py, qx, qy,
 
 
 @njit(cache=True, fastmath=True, parallel=True)
-def _stage_update(state, k, coeff, tmp):
-    """tmp[:] = state + coeff * k  (parallel)"""
-    ny, nx = state.shape
+def _rk4_stage_all(psi, px, py, qx, qy,
+                   kpsi, kpx, kpy, kqx, kqy,
+                   coeff,
+                   tpsi, tpx, tpy, tqx, tqy):
+    """All five fields' stage update fused into one parallel loop:
+        t* = state + coeff * k*
+    Replaces five separate _stage_update dispatches per RK4 stage."""
+    ny, nx = psi.shape
     for j in prange(ny):
         for i in range(nx):
-            tmp[j, i] = state[j, i] + coeff * k[j, i]
+            tpsi[j, i] = psi[j, i] + coeff * kpsi[j, i]
+            tpx [j, i] = px [j, i] + coeff * kpx [j, i]
+            tpy [j, i] = py [j, i] + coeff * kpy [j, i]
+            tqx [j, i] = qx [j, i] + coeff * kqx [j, i]
+            tqy [j, i] = qy [j, i] + coeff * kqy [j, i]
 
 
 def rk4_step(
@@ -66,13 +85,9 @@ def rk4_step(
                 gradxpx, gradypx, gradxpy, gradypy, rhsP, P, tmp,
                 rhs_params, t)
 
-    for arr, k in ((tmp_psi, k1_psi), (tmp_px, k1_px), (tmp_py, k1_py),
-                   (tmp_qx, k1_qx), (tmp_qy, k1_qy)):
-        _stage_update(psi if arr is tmp_psi else
-                      px  if arr is tmp_px  else
-                      py  if arr is tmp_py  else
-                      qx  if arr is tmp_qx  else qy,
-                      k, 0.5 * dt, arr)
+    _rk4_stage_all(psi, px, py, qx, qy,
+                   k1_psi, k1_px, k1_py, k1_qx, k1_qy, 0.5 * dt,
+                   tmp_psi, tmp_px, tmp_py, tmp_qx, tmp_qy)
     clamp_zero_boundary(tmp_px)
     clamp_zero_boundary(tmp_py)
 
@@ -85,11 +100,9 @@ def rk4_step(
                 gradxpx, gradypx, gradxpy, gradypy, rhsP, P, tmp,
                 rhs_params, t + 0.5 * dt)
 
-    for arr, base, k in (
-        (tmp_psi, psi, k2_psi), (tmp_px, px, k2_px), (tmp_py, py, k2_py),
-        (tmp_qx, qx, k2_qx),   (tmp_qy, qy, k2_qy)
-    ):
-        _stage_update(base, k, 0.5 * dt, arr)
+    _rk4_stage_all(psi, px, py, qx, qy,
+                   k2_psi, k2_px, k2_py, k2_qx, k2_qy, 0.5 * dt,
+                   tmp_psi, tmp_px, tmp_py, tmp_qx, tmp_qy)
     clamp_zero_boundary(tmp_px)
     clamp_zero_boundary(tmp_py)
 
@@ -102,11 +115,9 @@ def rk4_step(
                 gradxpx, gradypx, gradxpy, gradypy, rhsP, P, tmp,
                 rhs_params, t + 0.5 * dt)
 
-    for arr, base, k in (
-        (tmp_psi, psi, k3_psi), (tmp_px, px, k3_px), (tmp_py, py, k3_py),
-        (tmp_qx, qx, k3_qx),   (tmp_qy, qy, k3_qy)
-    ):
-        _stage_update(base, k, dt, arr)
+    _rk4_stage_all(psi, px, py, qx, qy,
+                   k3_psi, k3_px, k3_py, k3_qx, k3_qy, dt,
+                   tmp_psi, tmp_px, tmp_py, tmp_qx, tmp_qy)
     clamp_zero_boundary(tmp_px)
     clamp_zero_boundary(tmp_py)
 
