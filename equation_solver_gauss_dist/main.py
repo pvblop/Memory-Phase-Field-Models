@@ -46,6 +46,7 @@ def main():
     a_p        = cfg["params"].get("a_p", cfg["params"].get("gamma", 1.0))
     b_p        = cfg["params"].get("b_p", 1.0)
     chi        = cfg["params"].get("chi", cfg["params"].get("gamma", 0.0))
+    eta        = cfg["params"].get("eta", 0.0)   # additive p-noise strength
     alpha      = cfg["params"]["alpha"]
     u_q        = cfg["params"].get("u_q", 1.0)
     rq         = cfg["params"]["rq"]
@@ -95,13 +96,14 @@ def main():
     dt_diff = suggest_dt(dx, dy, Dmax, safety=0.2)
     dt = min(dt_diff, 0.05 * min(dx,dy)/(abs(v0)+1e-12))
     print(f"Suggested dt based on diffusion: {dt_diff:.4e}, using dt={dt:.4e}")
-    save_every = max(1, int(np.round(T / dt)) // 100)
+    save_every = max(1, int(np.round(T / dt)) // 5)
 
     ### COPY JSON CONFIG WITH USED PARAMETERS TO OUTPUT FOLDER ###
     from datetime import datetime
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     folder = f"{args.out}/sim_data_{timestamp}_it_{seed}"
     cfg_used = deepcopy(cfg)
+    cfg_used["params"]["eta"] = eta
     cfg_used["time"]["dt_used"] = dt
     cfg_used["time"]["save_every"] = save_every
     cfg_used["domain"]["dx"] = dx
@@ -112,7 +114,7 @@ def main():
 
 
     ### MAIN SIMULATION LOOP ###
-    params = (lam_psi, D_psi, v0, lam_p, D_p, a_p, b_p, chi, alpha, u_q, rq, mu, t_dec, dx, dy, dt)
+    params = (lam_psi, D_psi, v0, lam_p, D_p, a_p, b_p, chi, alpha, u_q, rq, mu, t_dec, dx, dy, dt, eta, seed)
 
     t, psi_hist, px_hist, py_hist, qx_hist, qy_hist, P_hist, gradPx_hist, gradPy_hist, divJrho_hist = simulate_rk4_numba(
         psi0, px0, py0, qx0, qy0,
@@ -135,8 +137,8 @@ def main():
     }
     params_out = {
         "lam_psi": lam_psi, "D_psi": D_psi, "v0": v0, "lam_p": lam_p,
-        "D_p": D_p, "a_p": a_p, "b_p": b_p, "chi": chi, "alpha": alpha,
-        "u_q": u_q, "rq": rq, "rbm": rbm,
+        "D_p": D_p, "a_p": a_p, "b_p": b_p, "chi": chi, "eta": eta, "alpha": alpha,
+        "u_q": u_q, "rq": rq, "rbm": rbm, "seed": seed,
         "T_final": T, "dt": dt, "save_every": save_every,
     }
     path = write_h5(folder, solution=solution, t=t, grid=grid,

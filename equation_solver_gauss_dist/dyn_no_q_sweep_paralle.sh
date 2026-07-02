@@ -12,7 +12,7 @@ export OPENBLAS_NUM_THREADS=${OPENBLAS_NUM_THREADS:-1}
 
 PYTHON=${PYTHON:-python}
 BASE_CONFIG=${BASE_CONFIG:-config/config.json}
-OUTPUT_ROOT=${OUTPUT_ROOT:-outputs/dyn_no_q_sweep}
+OUTPUT_ROOT=${OUTPUT_ROOT:-outputs/dyn_no_q_sweep2}
 N_JOBS=${N_JOBS:-12}
 
 mkdir -p "$OUTPUT_ROOT"
@@ -28,8 +28,8 @@ mkdir -p "$OUTPUT_ROOT"
 # -----------------------------------------------------------------------------
 DIFF_CASES=(
     # dist  rbm   sigma  D_psi  x0    y0
-    "pol   0.26  10.0   1.0    12.5  25.0"
-    "pol   0.78  25.0   1.0    25.0  25.0"
+    "pol   1.0  10.0   1.0    12.5  25.0"
+    "pol   0.3  25.0   1.0    25.0  25.0"
 )
 
 # Config compatibility:
@@ -59,7 +59,7 @@ CHI=0.0
 UQ=0.0
 
 # Repetitions / seeds. Start with one seed; use e.g. IT=(1 2 3) for statistics.
-IT=(1 2 3 4 5)
+IT=(1)
 
 run_one() {
     local diff_case="$1"

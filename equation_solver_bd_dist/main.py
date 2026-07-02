@@ -102,7 +102,7 @@ def main():
     # generate rb field
     rb, bead_positions = beads_dist(N_bd, m_bd, sig_bd, dist, X, Y)
 
-    Dmax = max(D_psi, D_p)
+    Dmax = max(lam_psi * D_psi, lam_p * D_p)
     dt_diff = suggest_dt(dx, dy, Dmax, safety=0.2)
     dt = min(dt_diff, 0.05 * min(dx,dy)/(abs(v0)+1e-12))
     print(f"Suggested dt based on diffusion: {dt_diff:.4e}, using dt={dt:.4e}")

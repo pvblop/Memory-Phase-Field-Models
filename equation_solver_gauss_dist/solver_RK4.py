@@ -35,6 +35,23 @@ def _rk4_combine(psi, px, py, qx, qy,
 
 
 @njit(cache=True, fastmath=True, parallel=True)
+def _add_additive_p_noise(px, py, noise_x, noise_y, noise_prefactor):
+    """Add one Euler-Maruyama noise increment to p.
+
+    The stochastic PDE is interpreted as
+        dp = deterministic_rhs*dt + sqrt(2*eta) dW,
+    with <dW(r)dW(r')> = delta(r-r') dt.  On a grid cell of area
+    dx*dy, the discrete increment has amplitude sqrt(2*eta*dt/(dx*dy)).
+    The arrays noise_x/noise_y must contain independent N(0,1) samples.
+    """
+    ny, nx = px.shape
+    for j in prange(ny):
+        for i in range(nx):
+            px[j, i] += noise_prefactor * noise_x[j, i]
+            py[j, i] += noise_prefactor * noise_y[j, i]
+
+
+@njit(cache=True, fastmath=True, parallel=True)
 def _rk4_stage_all(psi, px, py, qx, qy,
                    kpsi, kpx, kpy, kqx, kqy,
                    coeff,
@@ -72,7 +89,7 @@ def rk4_step(
     
     t parameter is the current time (used for bead decay calculation).
     """
-    lam_psi, D_psi, _, lam_p, D_p, a_p, b_p, chi, alpha, u_q, rq, _, t_dec, _, _, dt = params
+    lam_psi, D_psi, _, lam_p, D_p, a_p, b_p, chi, alpha, u_q, rq, _, t_dec, _, _, dt, eta, seed = params
     # Build a params tuple as expected by compute_rhs.
     rhs_params = (lam_psi, D_psi, v0, lam_p, D_p, a_p, b_p, chi, alpha, u_q, rq, mu, t_dec, dx, dy)
 
@@ -146,7 +163,7 @@ def simulate_rk4_numba(
     rb, Lx, Ly, T, dt, save_every,
     params
 ):
-    lam_psi, D_psi, v0, lam_p, D_p, a_p, b_p, chi, alpha, u_q, rq, mu, t_dec, dx, dy, dt = params
+    lam_psi, D_psi, v0, lam_p, D_p, a_p, b_p, chi, alpha, u_q, rq, mu, t_dec, dx, dy, dt, eta, seed = params
 
     psi = psi0.copy()
     px  = px0.copy()
@@ -191,6 +208,12 @@ def simulate_rk4_numba(
     gradxpx, gradypx = zeros(), zeros()
     gradxpy, gradypy = zeros(), zeros()
 
+    # Additive Gaussian white noise for the p equation.
+    # Discrete space-time white noise amplitude: sqrt(2*eta*dt/(dx*dy)).
+    rng_noise = np.random.default_rng(int(seed) + 7919)
+    noise_x, noise_y = zeros(), zeros()
+    noise_prefactor = np.sqrt(2.0 * eta * dt / (dx * dy)) if eta > 0.0 else 0.0
+
     # Save initial state
     s = 0
     out_t[s] = 0.0
@@ -214,6 +237,16 @@ def simulate_rk4_numba(
             rhsP, P, tmp,
             dx, dy, v0, mu, t
         )
+
+        # Euler-Maruyama stochastic increment for additive p-noise.
+        # The two components and all grid points are independent.
+        if eta > 0.0:
+            noise_x[:, :] = rng_noise.standard_normal((Ny, Nx))
+            noise_y[:, :] = rng_noise.standard_normal((Ny, Nx))
+            _add_additive_p_noise(px, py, noise_x, noise_y, noise_prefactor)
+            clamp_zero_boundary(px)
+            clamp_zero_boundary(py)
+
         t += dt
 
         if n % save_every == 0:
