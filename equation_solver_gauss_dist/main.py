@@ -28,6 +28,7 @@ def main():
     Ly = cfg["domain"]["Ly"]
 
     T          = cfg["time"]["T"]
+    frames     = cfg["time"]["frames"]
 
     bd_type    = cfg["beads"]["type"]
     rbm        = cfg["beads"]["rbm"]
@@ -96,7 +97,7 @@ def main():
     dt_diff = suggest_dt(dx, dy, Dmax, safety=0.2)
     dt = min(dt_diff, 0.05 * min(dx,dy)/(abs(v0)+1e-12))
     print(f"Suggested dt based on diffusion: {dt_diff:.4e}, using dt={dt:.4e}")
-    save_every = max(1, int(np.round(T / dt)) // 5)
+    save_every = max(1, int(np.round(T / dt) // frames))
 
     ### COPY JSON CONFIG WITH USED PARAMETERS TO OUTPUT FOLDER ###
     from datetime import datetime

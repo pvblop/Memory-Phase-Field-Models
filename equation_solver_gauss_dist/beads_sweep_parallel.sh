@@ -7,7 +7,7 @@ export MKL_NUM_THREADS=1
 export OPENBLAS_NUM_THREADS=1
 
 PYTHON=python
-BASE_CONFIG="config/base_pol.json"
+BASE_CONFIG="config/config.json"
 OUTPUT_ROOT="outputs/differentiation_sweep"
 mkdir -p "$OUTPUT_ROOT"
 
@@ -18,7 +18,7 @@ RBMS=($(seq 0.1 0.1 1.0))
 SIG2=(15.0 20.0 25.0 30.0)
 SIG1=($(seq 0.5 0.5 15.0))
 SIG=(${SIG1[@]} ${SIG2[@]})
-DPSI=(0.5 5.0 10.0)
+DPSI=(0.1)
 X0=(25.0)
 IT=(1)
 
